@@ -33,3 +33,15 @@ dependencies {
     testImplementation 'junit:junit:4.12'
 }
 
+// This task is needed by Heroku
+task stage {
+    dependsOn build
+}
+
+// This task copies dependencies that are pulled down from Maven
+// and copies into a directory specified in Procfile
+task copyToLib(type: Copy) {
+    into "$buildDir/libs"
+    from(configurations.compile)
+}
+stage.dependsOn(copyToLib)
