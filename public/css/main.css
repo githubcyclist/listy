@@ -1,0 +1,43 @@
+#header-main {
+	background-color: #c93838;
+	position: fixed;
+	top: 0;
+	width: 100%;
+	overflow: hidden;
+	z-index: 50000;
+}
+
+#logo {
+	padding-top: 5px;
+	padding-bottom: 5px;
+	display: block;
+    margin: 0 auto;
+}
+
+#intro {
+	text-align: center;
+	display: block;
+	padding-bottom: 5px;
+	padding-left: 5px;
+	margin-top: 100px;
+}
+
+large-block {
+	padding: 40px;
+}
+
+small-block {
+	padding: 20px;
+}
+
+tiny-block {
+	/*padding: 5px !important;*/
+}
+
+#why-listy {
+	text-align: center;
+}
+
+#start {
+	font-size: 20px;
+}

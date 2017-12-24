@@ -1,0 +1,65 @@
+<html>
+	<head>
+	
+		<!--Import Google Icon Font-->
+      	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+		
+     	 <!--Import materialize.css-->
+      	<link type="text/css" rel="stylesheet" href="css/materialize.min.css"  media="screen,projection"/>
+		
+		<!-- Import main css file-->
+		<link type="text/css" rel="stylesheet" href="css/main.css"/>
+		
+		
+		
+		<meta charset="utf-8"/>
+		
+	</head>
+	<body>
+		 <!--Import jQuery before materialize.js-->
+     	<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+        <script type="text/javascript" src="js/materialize.min.js"></script>
+		<script>
+			function getParameterByName(name, url) {
+    				if (!url) url = window.location.href;
+    				name = name.replace(/[\[\]]/g, "\\$&");
+   				var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        			results = regex.exec(url);
+   				if (!results) return null;
+    				if (!results[2]) return '';
+   	 			return decodeURIComponent(results[2].replace(/\+/g, " "));
+			}
+		
+			function createTask() {
+				var listNum = parseInt(getParameterByName('listId'));
+				var name = $("#taskname").val();
+				var desc = $("#desc_area").val();
+				console.log("/newTask/" + listNum + "/" + name + "/" + desc);
+				$.ajax({
+    					url: "/newTask/" + listNum + "/" + name + "/" + desc, 
+    					type: 'GET',
+    					error: function(XMLHttpRequest, textStatus, errorThrown){
+        					console.log('status:' + XMLHttpRequest.status + ', status text: ' + XMLHttpRequest.statusText + ', error thrown: "' + errorThrown + '"');
+    					},
+   					success: function(data){ console.log("Success!"); }
+				});
+				
+				window.location = "/tasklist.html?listId=" + listNum;
+			}
+		</script>
+		<header id="header-main floating">
+			<img id="logo" src="images/listy.png"></img>
+		</header>
+		 <div class="input-field inline center-block" style="left: 42%;">
+          <input id="taskname" type="text" class="validate">
+          <label for="taskname">Task Name</label>
+        </div>
+		<br>
+		<div class="input-field inline"  style="left: 42%;">
+          <textarea id="desc_area" class="materialize-textarea"></textarea>
+          <label for="desc_area">Task Description</label>
+        </div>
+		<br>
+		<button class="waves-effect waves-light btn" style="left: 43%;" onclick="createTask()">Create</a>
+	</body>
+</html>

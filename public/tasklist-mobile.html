@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	
+		<!--Import Google Icon Font-->
+      	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+		
+     	 <!--Import materialize.css-->
+      	<link type="text/css" rel="stylesheet" href="css/materialize.min.css"  media="screen,projection"/>
+		
+		<!-- Import main css file-->
+		<link type="text/css" rel="stylesheet" href="css/main.css"/>
+		
+		 <!--Let browser know website is optimized for mobile-->
+     	 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		
+		<!-- Bootstrap -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css"
+		  integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+		
+		<meta charset="utf-8"/>
+		
+	</head>
+	<body>
+		 <!--Import jQuery before materialize.js-->
+     	<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+        <script type="text/javascript" src="js/materialize.min.js"></script>
+		<header id="header-main floating" style="background-color: #c93838;">
+			<img id="logo" src="images/listy.png"></img>
+		</header>
+		<div class="container-fluid">
+			<div class="row">
+				<div id="left-sidebar" class="col-xs-1">
+					<ul>
+						<li style="padding-top: 10px;"><a href="#">+ Add List</a></li>
+					</ul>
+				</div>
+				<div id="tasklist" class="col-xs-2">
+					
+				</div>
+				<div id="descriptions" class="col-xs-3" style="padding-top: 15px; padding-left: 10px;">
+					<div id="nameField" style="font-weight: bold;"></div>
+				</div>
+				<script>
+					var listNum = 0;
+					function loadTasks() {
+						$.get("/tasks/" + listNum, function(data) {
+							var jsonData = JSON.parse(data);
+							for(var i = 0; i < jsonData.tasks.length; i++) {
+								var o = jsonData.tasks[i];
+								var name = o.name;
+								var desc = o.description;
+								var checked = o.checked;
+								$("#tasklist").append('<div id="task-container-' + i + '">' + 
+										'<p><input type="checkbox" id="task' + i + '" class="filled-in" />' +
+										'<label for="task' + i + '" style="color: black;">' + name + '</label></p></div>');
+								$("#tasklist").css("padding-top", "20px");
+								$("#task" + i).attr("onclick", "toggleTask(" + i + ")");
+								if(checked) {
+									$("#task" + i).prop("checked", true);
+								} else {
+									$("#task" + i).prop("checked", false);
+								}
+								$("#nameField").html(name);
+								$("#descriptions").html('<div id="nameField" style="font-weight: bold;">' + name + '</div>' + desc);
+							}
+						});
+					}
+					
+					function toggleTask(id) {
+						$.post("/toggle/" + listNum + "/" + id);
+					}
+					$(document).ready(loadTasks());
+				</script>
+				<div class="fixed-action-btn">
+    					<a class="btn-floating btn-large waves-effect waves-light red" href="/addtask.html">
+      					<i class="large material-icons">add</i>
+    					</a>
+  				</div>
+			</div>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	
+		<meta charset="utf-8"/>
+	
+		<!--Import Google Icon Font-->
+      	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+		
+     	 <!--Import materialize.css-->
+      	<link type="text/css" rel="stylesheet" href="css/materialize.min.css"  media="screen,projection"/>
+		
+		<!-- Import main css file-->
+		<link type="text/css" rel="stylesheet" href="css/main.css"/>
+		
+		<!-- Import other css file-->
+		<link type="text/css" rel="stylesheet" href="css/other.css"/>
+		
+		<!-- Bootstrap -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css"
+		  integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+		  
+		 <!--Let browser know website is optimized for mobile-->
+      	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<link rel="apple-touch-icon" href="/images/ios-icon.png">
+		<meta name="apple-mobile-web-app-title" content="Listy">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="white">
+		  
+		  <!-- Favicon -->
+		 <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		 <link rel="icon" href="/favicon.ico" type="image/x-icon">
+		 
+		 <!-- Cookies -->
+		 <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+		 
+		 <title>Listy - Tasks</title>
+		
+	</head>
+	<body>
+		 <!--Import jQuery before materialize.js-->
+     	<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+        <script type="text/javascript" src="js/materialize.min.js"></script>
+		<header class="header-main floating valign-wrapper"
+					   style="background-color: #c93838; position: fixed;
+									top: 0; width: 100%; overflow: visible; z-index: 50000;">
+			<ul id="slide-out" class="side-nav">
+    				<li><div class="user-view">
+     	 		<a href="#!user"><i class="material-icons">account_circle</i></a>
+      			<a href="#!name" id="username-nav"> </a>
+    				</div></li>
+				<li><a class="subheader">Lists</a></li>
+    				<li><div class="divider"></div></li>
+				
+  			</ul>
+  			<a href="#" data-activates="slide-out" class="button-collapse hide-on-med-and-up" style="color: black;">
+				<i class="material-icons">more_vert</i>
+			</a>
+			<img id="logo" class="center-align" src="images/listy.png" style="display: block;"></img>
+			<button class="waves-effect waves-light btn-large red right valign right-align center-block dropdown-button hide-on-small-only"
+			 	data-activates="account-dropdown" id="account-button" style="position: absolute; right: 2%;">
+				<i class="material-icons left">account_circle</i>
+			</button>
+			<ul id="account-dropdown" class="dropdown-content" style="z-index: 60000;">
+    				<li><a href="#!">Profile</a></li>
+				<li><a href="#!">Timey</a></li>
+    				<li class="divider"></li>
+    				<li><a href="/signOut">Sign out</a></li>
+  		</ul>
+		</header>
+		<script>
+			function addList() {
+				var listName = prompt("Enter the name of your new list:");
+				if (listName == null|| listName == "") {
+    					return;
+				} else {
+    					$.get("/newList/" + listName, function(data) { console.log("Success!"); window.location.reload(); });
+				} 
+			}
+			
+			function addTemplate() {
+				var templateName = prompt("Enter the name of your new template:");
+				if (templateName == null || templateName == "") {
+    					return;
+				} else {
+    					$.get("/newTemplate/" + templateName, function(data) { console.log("Success!"); window.location.reload(); });
+				} 
+			}
+			
+			function noThanks() {
+				$("#tip-card").css("display", "none");
+			}
+			
+			function neverShow() {
+				Cookies.set('neverShow', '', { expires: Number.MAX_SAFE_INTEGER });
+			}
+		</script>
+		<div id="hidden-enlarger" style="padding: 45px;"></div>
+		<div class="container-fluid">
+			<div class="row" id="tip-card">
+        			<div class="col s12 m6">
+          			<div class="card blue-grey darken-1 hide-on-med-and-up">
+            				<div class="card-content white-text">
+              				<span class="card-title"><i class="material-icons" style="color: orange;">lightbulb_outline</i> Tip!</span>
+              					<p>It looks like you're on mobile, and you are browsing outside of the Listy app.
+									   <a href="/install-instructions.html" style="color: orange;">Learn how to install it</a></p>
+            				</div>
+            				<div class="card-action">
+              				<a href="#" onclick="noThanks()">Dismiss</a>
+							<a href="#" onclick="neverShow()">Don't show again</a>
+            				</div>
+          			</div>
+       			</div>
+     		</div>
+			<div class="row">
+				<div id="left-sidebar" class="col hide-on-small-only">
+					<h3>Lists</h3>
+					<ul id="lists">
+					</ul>
+					<h3>Templates</h3>
+					<ul id="templates">
+					</ul>
+				</div>
+				<div id="tasklist" class="col">
+					<h3 id="listName" style="padding-bottom: 3px; margin-top: -20px;"></h3>
+					<div class="hide" id="apply-form">
+						<div class="input-field col s12" style="margin-left: -10px; width: 200px;">
+	    						<select id="apply-select">
+	      						<option value="" disabled selected>Apply to list</option>
+	    						</select>
+ 				 		</div>
+						<script>
+							function applyTemplate() {
+								var selection = $("#apply-select option:selected").val();
+								console.log("here");
+								$.ajax({
+									url: '/applyTemplate/' + listNum + '/' + selection,
+									type: 'PATCH',
+									success: function(data) { console.log("Success!"); window.location.reload(); },
+									error: function(xhr, status, error) { console.log("Error! " + xhr.status + " " + error); }
+								});
+							}
+						</script>
+						</script>
+						<a class="waves-effect waves-light btn"
+							 style="color: white; margin-top: 25px; margin-left: 10px;"
+							 onclick="applyTemplate()">Apply</a>
+					</div>
+					<br>
+				</div>
+				<div id="descriptions" class="col hide-on-small-only" style="padding-top: 15px; padding-left: 10px;">
+					<div id="nameField" style="font-weight: bold;"></div>
+				</div>
+				<script>
+					$.fn.extend({ 
+               		 	disableSelection: function() { 
+                    		this.each(function() { 
+                        			if (typeof this.onselectstart != 'undefined') {
+                           			this.onselectstart = function() { return false; };
+                        			 } else if (typeof this.style.MozUserSelect != 'undefined') {
+                            			this.style.MozUserSelect = 'none';
+                        			 } else {
+                            			this.onmousedown = function() { return false; };
+                       			 }
+                    		}); 
+                			} 
+            			});
+						
+					function editTask(taskId) {
+						$.get("/tasks/" + listNum, function(data) {
+							var json = JSON.parse(data);
+							var task = json.tasks[taskId];
+							console.log("task name = " + task.name);
+							console.log("task description = " + task.description);
+							$("#newTask").val(task.name);
+							console.log("val = " + $("#taskname").val());
+							$("#new-desc-area").val(task.description);
+							//Materialize.updateTextFields();
+							console.log(document.getElementById("newTask").innerHTML + " vs " + task.name);
+							// Set up modal for editing task
+							$('#edit-modal').modal({
+						      dismissible: true, // Modal can be dismissed by clicking outside of the modal
+						      opacity: .5, // Opacity of modal background
+						      inDuration: 300, // Transition in duration
+						      outDuration: 200, // Transition out duration
+						      startingTop: '4%', // Starting top style attribute
+						      endingTop: '10%', // Ending top style attribute
+						      ready: function(modal, trigger) {},
+						      complete: function() {
+								var name = $("#newTask").val();
+								var desc = $("#new-desc-area").val();
+								$.ajax({
+				    					url: "/editTask/" + listNum + "/" + taskId + "/" + name + "/" + desc,
+				    					type: 'PATCH',
+				    					error: function(XMLHttpRequest, textStatus, errorThrown){
+				        					console.log('status:' + XMLHttpRequest.status + ', status text: ' + XMLHttpRequest.statusText + ', error thrown: "' + errorThrown + '"');
+				    					},
+				   					success: function(data){ console.log("Success!"); window.location.reload(); }
+								});
+							  } // Callback for Modal close
+						    }
+						  ).modal('open');
+						});
+					}
+						
+					function viewDesc(taskId) {
+						$.get("/tasks/" + listNum, function(data) {
+							var json = JSON.parse(data);
+							alert(json.tasks[taskId].description);
+						});
+					}
+						
+					function deleteTask(taskId) {
+						$.ajax({
+    							url: '/deleteTask/' + listNum + '/' + taskId,
+    							type: 'DELETE',
+    							success: function(result) {
+								console.log("Success!");
+								window.location.reload();
+    							},
+							error: function() {
+								console.log("error");
+							}
+						});
+					}
+					
+					function getParameterByName(name, url) {
+    						if (!url) url = window.location.href;
+    						name = name.replace(/[\[\]]/g, "\\$&");
+   						var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        					results = regex.exec(url);
+   						if (!results) return null;
+    						if (!results[2]) return '';
+   	 					return decodeURIComponent(results[2].replace(/\+/g, " "));
+					}
+				
+					var listNum = parseInt(getParameterByName('listId'));
+					var template = (getParameterByName('isTemplate') === "true");
+					function loadTasks() {
+						$.get("/tasks/" + listNum, function(data) {
+							var jsonData = JSON.parse(data);
+							for(var i = 0; i < jsonData.tasks.length; i++) {
+								var o = jsonData.tasks[i];
+								var name = o.name;
+								var desc = o.description;
+								var checked = o.checked;
+								$("#tasklist").append('<div id="task-container-' + i + '" style="vertical-align: middle;">' + 
+										'<p><input type="checkbox" id="task' + i + '" class="filled-in" />' +
+										'<label for="task' + i + '" style="color: black; vertical-align: middle;">' + name + '</label>' + 
+										'<a id="task-btn-' + i + '" class="btn-floating btn-tiny"' +
+										'data-activates="dropdown-task-' + i + '" href="#" style="color: white;">' +
+										'<i class="material-icons">arrow_drop_down</i></a></p></div>')
+									.append('<ul id="dropdown-task-' + i + '" class="dropdown-content">' +
+										'<li><a data-target="add-modal" class="waves-effect waves-light modal-trigger"' +
+										'href="#" onclick="editTask(' + i + ')">Edit</a></li>' +
+    										'<li class="hide-on-med-and-up"><a href="#" onclick="viewDesc(' + i + ')">View Description</a></li>' +
+    										'<li class="divider"></li>' +
+    										'<li><a href="#" onclick="deleteTask(' + i + ')">Delete</a></li>' +
+  									"</ul>");
+									/*
+									
+									*/
+  								$('#task-btn-' + i).dropdown({
+      									inDuration: 300,
+      									outDuration: 225,
+      									constrainWidth: false, // Does not change width of dropdown to that of the activator
+      									hover: false, // Activate on hover
+      									gutter: 0, // Spacing from edge
+      									belowOrigin: true, // Displays dropdown below the button
+      									alignment: 'left', // Displays dropdown with edge aligned to the left of button
+      									stopPropagation: false // Stops event propagation
+    									}
+  								);
+								$("#tasklist").css("padding-top", "20px");
+								$("#task" + i).attr("onclick", "toggleTask(" + i + ")");
+								if(checked) {
+									$("#task" + i).prop("checked", true);
+								} else {
+									$("#task" + i).prop("checked", false);
+								}
+								$("#nameField").html(name);
+								$("#descriptions").html('<div id="nameField" style="font-weight: bold;">' + name + '</div>' + desc);
+							}
+						});
+					}
+					
+					function loadTemplateTasks() {
+						$.get("/templateTasks/" + listNum, function(data) {
+							var jsonData = JSON.parse(data);
+							for(var i = 0; i < jsonData.tasks.length; i++) {
+								var o = jsonData.tasks[i];
+								var name = o.name;
+								$("#tasklist").append('<div id="task-container-' + i + '" style="vertical-align: middle;">' + 
+										'<p>' + name + '<a id="task-btn-' + i + '" class="btn-floating btn-tiny"' +
+										'data-activates="dropdown-task-' + i + '" href="#" style="color: white;">' +
+										'<i class="material-icons">arrow_drop_down</i></a></p></div>')
+									.append('<ul id="dropdown-task-' + i + '" class="dropdown-content">' +
+										'<li><a data-target="add-modal" class="waves-effect waves-light modal-trigger"' +
+										'href="#" onclick="editTask(' + i + ')">Edit</a></li>' +
+    										'<li class="hide-on-med-and-up"><a href="#" onclick="viewDesc(' + i + ')">View Description</a></li>' +
+    										'<li class="divider"></li>' +
+    										'<li><a href="#" onclick="deleteTask(' + i + ')">Delete</a></li>' +
+  									"</ul>");
+									/*
+									
+									*/
+  								$('#task-btn-' + i).dropdown({
+      									inDuration: 300,
+      									outDuration: 225,
+      									constrainWidth: false, // Does not change width of dropdown to that of the activator
+      									hover: false, // Activate on hover
+      									gutter: 0, // Spacing from edge
+      									belowOrigin: true, // Displays dropdown below the button
+      									alignment: 'left', // Displays dropdown with edge aligned to the left of button
+      									stopPropagation: false // Stops event propagation
+    									}
+  								);
+								$("#tasklist").css("padding-top", "20px");
+							}
+						});
+					}
+					
+					function loadLists() {
+						$.get("/lists", function(data) {
+							var jsonData = JSON.parse(data);
+							lists = jsonData.listNames;
+							
+							for(var i = 0; i < lists.length - 1; i++) {
+								var listItem = lists[i];
+								if(template) {
+									$("#apply-select").append('<option value="' + i + '">' + listItem + '</option>')
+																	.material_select();
+								}
+								var icon = (listItem === "Today") ? '<i class="material-icons">today</i>'
+																					      : '<i class="material-icons">list</i>';
+								var a = '<a href="/list/' + i + '">';
+								var p = '<p>';
+								var pCl = '</p>';
+								$("#lists").append('<div style="vertical-align: middle;' +
+																					   'display: inline-block;">' +
+																	'<a style="vertical-align: middle; padding-top: 13px; display: inline;" href="list/' + i + '">' + icon + '</a>'
+																 + ' <a style="vertical-align: middle; display: inline;" href="list/' + i + '">' + listItem + '</a></div><br>');
+								$(".side-nav").append('<li><a href="/list/' + i + '">' + icon + ' ' + listItem + '</a></li>');
+							}
+							if(!window.navigator.standalone) {
+								$(".side-nav").append('<li><div class="divider"></div></li>');
+								$(".side-nav").append('<li><a href="#" onclick="instructions()"><i class="material-icons">file_download</i> Install the Listy app</a></li>');
+							}
+						});
+					}
+					
+					function loadTemplates() {
+						$.get("/templates", function(data) {
+							var jsonData = JSON.parse(data);
+							var templates = jsonData.templateNames;
+							
+							for(var i = 0; i < templates.length - 1; i++) {
+								var template = templates[i];
+								var icon = '<i class="material-icons">filter_list</i>';
+								var a = '<a href="/template/' + i + '">';
+								var p = '<p>';
+								var pCl = '</p>';
+								$("#templates").append('<div style="vertical-align: middle;' +
+																					   'display: inline-block;">' +
+																	'<a style="vertical-align: middle; padding-top: 13px; display: inline;"' + 
+																	'href="template/' + i + '">' + icon + '</a>'
+																 + ' <a style="vertical-align: middle; display: inline;"' + 
+																 'href="template/' + i + '">' + template + '</a></div><br>');
+								$(".side-nav").append('<li><a href="/template/' + i + '">' + icon + ' ' + template + '</a></li>');
+							}
+							if(!window.navigator.standalone) {
+								$(".side-nav").append('<li><div class="divider"></div></li>');
+								$(".side-nav").append('<li><a href="#" onclick="instructions()"><i class="material-icons">file_download</i> Install the Listy app</a></li>');
+							}
+						});
+					}
+					
+					function toggleTask(id) {
+						$.post("/toggle/" + listNum + "/" + id);
+					}
+					
+					function instructions() { window.location = '/install-instructions.html'; }
+					
+					$(document).ready(function() {
+						$('select').material_select();
+						$.get("/currentuser", function(data) {
+							if(data === "" || data === null) {
+								window.location = "/index.html";
+							}
+							console.log(data);
+							$("#account-button").append(data + '<i class="material-icons right">arrow_drop_down</i>');
+							$("#username-nav").append(data);
+						}).fail(function() {
+							console.log("Failed to check current user.");
+							window.location = "/index.html";
+						});
+						loadLists();
+						loadTemplates();
+						$('#add-modal').modal({
+						      dismissible: true, // Modal can be dismissed by clicking outside of the modal
+						      opacity: .5, // Opacity of modal background
+						      inDuration: 300, // Transition in duration
+						      outDuration: 200, // Transition out duration
+						      startingTop: '4%', // Starting top style attribute
+						      endingTop: '10%', // Ending top style attribute
+						      ready: function(modal, trigger) {
+							  	if(template) { $("#desc_area, #desc_label").css("display", "none"); }
+							  },
+						      complete: function() {
+								var name = $("#taskname").val();
+							  	var uRL = "";
+							  	if(template) {
+							  		request = "/newTemplateTask/";
+									uRL = request + listNum + "/" + name;
+							  	} else {
+									request = "/newTask/";
+									uRL = request + listNum + "/" + name + "/" + $("#desc_area").val();
+								}
+								console.log(uRL);
+								$.ajax({
+				    					url: uRL,
+				    					type: 'GET',
+				    					error: function(XMLHttpRequest, textStatus, errorThrown){
+				        					console.log('status:' + XMLHttpRequest.status + ', status text: ' + XMLHttpRequest.statusText + ', error thrown: "' + errorThrown + '"');
+				    					},
+				   					success: function(data){ console.log("Success!"); window.location.reload(); }
+								});
+							  } // Callback for Modal close
+						    });
+							// Set up dropdown for account button
+						 $('#account-button').dropdown({
+	      						inDuration: 300,
+	     					 	outDuration: 225,
+	     	 					constrainWidth: true, // Does not change width of dropdown to that of the activator
+	      						hover: false, // Activate on hover
+	      						gutter: 0, // Spacing from edge
+	      						belowOrigin: true, // Displays dropdown below the button
+	      						alignment: 'left', // Displays dropdown with edge aligned to the left of button
+	      						stopPropagation: false // Stops event propagation
+	    						});
+							// Set up page sidenav
+							$('.button-collapse').sideNav({
+	      								menuWidth: 300,
+	      								edge: 'left',
+	      								closeOnClick: true,
+	      								draggable: true,
+	      								onOpen: function(el) {},
+	      								onClose: function(el) {}
+	    							}
+	  						);
+							// Set up modal for adding new task
+							$('#batch-add-modal').modal({
+						      dismissible: true, // Modal can be dismissed by clicking outside of the modal
+						      opacity: .5, // Opacity of modal background
+						      inDuration: 300, // Transition in duration
+						      outDuration: 200, // Transition out duration
+						      startingTop: '4%', // Starting top style attribute
+						      endingTop: '10%', // Ending top style attribute
+						      ready: function(modal, trigger) {},
+						      complete: function() {
+								var tasks = $("#batchAddArea").val().split(/\r?\n/);
+								tasks.forEach(function(task) {
+									$.ajax({
+				    						url: "/newTask/" + listNum + "/" + task + "/(description)",
+				    						type: 'GET',
+				    						error: function(XMLHttpRequest, textStatus, errorThrown){
+				        						console.log('status:' + XMLHttpRequest.status + ', status text: ' + XMLHttpRequest.statusText + ', error thrown: "' + errorThrown + '"');
+				    						},
+				   						success: function(data){ console.log("Success!"); window.location.reload(); }
+									});
+								});
+							  } // Callback for Modal close
+						    }
+						  );
+						  // Check if using web app or if "neverShow" cookie exists
+							var noShow = (Cookies.get("neverShow") !== undefined) || window.navigator.standalone;
+							if (noShow) {
+								$("#tip-card").css("display", "none");
+							}
+						  $(".material-label").addClass("hide-on-small-only");
+						var template = (getParameterByName('isTemplate') === "true");
+						if(template) {
+							$("#apply-form").removeClass("hide");
+							loadTemplateTasks();
+						} else {
+							var list = getParameterByName('listId');
+							if(list === null || list === "") {
+								window.location = "/tasklist.html?listId=0";
+							}
+							loadTasks();
+							$.get("/lists", function(data) {
+								var jsonData = JSON.parse(data);
+								lists = jsonData.listNames;
+								document.title = "Listy - " + lists[listNum];
+								$("#listName").html(lists[listNum]);
+							});
+						}
+					});
+					// Fix to prevent redirect when clicking buttons
+					/*var latestHref = '';
+					$('a').click(function() {
+						if($('a').attr('href') === undefined) { 
+							window.location.href = latestHref;
+		   					return false;
+						}
+						latestHref = this.href;
+		    				window.location.href = this.href;
+		    				return false;
+					});*/
+				</script>
+				<!-- Modal Structure -->
+  				<div id="add-modal" class="modal modal-fixed-footer">
+    					<div class="modal-content">
+      					<h4>New Task</h4>
+      					<div class="input-field inline" style="float: left;">
+          					<input id="taskname" type="text" class="validate active"></input>
+          					<label for="taskname">Task Name</label>
+       					</div>
+						<br>
+						<div class="input-field inline"  style="float: left;">
+          					<textarea id="desc_area" class="materialize-textarea active"></textarea>
+          					<label for="desc_area" class="active" id="desc_label">Task Description</label>
+        					</div>
+    					</div>
+    					<div class="modal-footer">
+      					<a href="#" class="modal-action modal-close waves-effect waves-green btn-flat ">Create</a>
+						<a href="#" onclick="$('#add-modal').modal('close');"
+						     class="modal-action modal-close waves-effect waves-green btn-flat ">Cancel</a>
+    					</div>
+				 </div>
+				 <div class="fixed-action-btn toolbar">
+				    <a class="btn-floating btn-large red">
+				      <i class="large material-icons">mode_edit</i>
+				    </a>
+				    <ul>
+					  <li class="waves-effect waves-light">
+					  	<a data-target="add-modal"
+						 class="modal-trigger" href="#"
+						 onclick="$('#add-modal').modal('open');">
+						 	<i class="material-icons">add</i>
+							<p class="material-label">Task</p>
+						</a>
+					  </li>
+					  <li class="waves-effect waves-light">
+					  	<a data-target="add-modal" 
+							 class="modal-trigger" href="#"
+							 onclick="$('#batch-add-modal').modal('open');">
+							 	<i class="material-icons">library_add</i>
+								<p class="material-label">Multiple tasks</p>
+							</a>
+					  </li>
+					  <li class="waves-effect waves-light">
+					  	<a href="#" onclick="addList()"><i class="material-icons">list</i><p class="material-label">List</p></a>
+					  </li>
+					  <li class="waves-effect waves-light">
+					  	<a href="#" onclick="addTemplate()"><i class="material-icons">filter_list</i><p class="material-label">Template</p></a>
+					  </li>
+				    </ul>
+				 </div>
+				<!--<div class="fixed-action-btn">
+    					<a data-target="add-modal" 
+						 class="btn-floating btn-large waves-effect waves-light red modal-trigger"
+						 href="#" onclick="$('#add-modal').modal('open');">
+      					<i class="large material-icons">add</i>
+    					</a>
+  				</div>-->
+			</div>
+		</div>
+		<div id="edit-modal" class="modal modal-fixed-footer">
+    			<div class="modal-content">
+      			<h4>Edit Task</h4>
+      			<div class="input-field inline" style="float: left;">
+          			<input id="newTask" type="text" class="validate active" placeholder="Name">
+          			<!--<label for="newTask">Task Name</label>-->
+       			</div>
+				<br>
+				<div class="input-field inline"  style="float: left;">
+          			<textarea id="new-desc-area" class="materialize-textarea active" placeholder="Description"></textarea>
+          			<!--<label for="new-desc-area">Task Description</label>-->
+        			</div>
+    			</div>
+    			<div class="modal-footer">
+      	    		<a href="#" class="modal-action modal-close waves-effect waves-green btn-flat ">Submit Edit</a>
+				<a href="#" onclick="window.location.reload();"
+					 class="modal-action modal-close waves-effect waves-green btn-flat ">Cancel</a>
+    			</div>
+		</div>
+		<div id="batch-add-modal" class="modal modal-fixed-footer">
+    					<div class="modal-content">
+      					<h4>Batch Add Tasks</h4>
+						<br>
+						<div class="input-field inline"  style="float: left;">
+          					<textarea id="batchAddArea" class="materialize-textarea active"></textarea>
+          					<label for="batchAddArea" class="active">Tasks (separated with newlines)</label>
+        					</div>
+    					</div>
+    					<div class="modal-footer">
+      					<a href="#" class="modal-action modal-close waves-effect waves-green btn-flat">Add All</a>
+						<a href="#" onclick="window.location.reload();"
+						     class="modal-action modal-close waves-effect waves-green btn-flat">Cancel</a>
+    					</div>
+				 </div>
+		<a href="#" onclick="$.get('/testRoute', function(data) { window.location.reload(); });">Test route</a>
+		<br>
+		<a href="#" onclick="window.location.reload();">Reload page</a>
+		<!--<script>(function(a,b,c){if(c in b&&b[c]){var d,e=a.location,f=/^(a|html)$/i;a.addEventListener("click",function(a){d=a.target;while(!f.test(d.nodeName))d=d.parentNode;"href"in d&&(d.href.indexOf("http")||~d.href.indexOf(e.host))&&(a.preventDefault(),e.href=d.href)},!1)}})(document,window.navigator,"standalone")</script>-->
+	</body>
+</html>
