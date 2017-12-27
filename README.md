@@ -1,2 +1,2 @@
 # listy
-A work-in-progress todo app using Sparkjava, JQuery, &amp; Materialize
+A work-in-progress to-do program built with Spark Java, jQuery, &amp; Materialize
